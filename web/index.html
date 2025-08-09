@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shape of Jakarta - Interactive Flooding Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .timeline-slider {
+            background: linear-gradient(90deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
+        }
+
+        .map-container {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .water-animation {
+            animation: flow 3s ease-in-out infinite;
+        }
+
+        @keyframes flow {
+            0%, 100% { transform: translateX(0) scale(1); opacity: 0.7; }
+            50% { transform: translateX(10px) scale(1.05); opacity: 1; }
+        }
+
+        .wisdom-card {
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #065f46 0%, #047857 100%);
+        }
+
+        .wisdom-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+
+        .memory-card {
+            transition: all 0.3s ease;
+        }
+
+        .memory-card:hover {
+            transform: scale(1.02);
+        }
+
+        .floating-element {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .clickable-element {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .clickable-element:hover {
+            filter: brightness(1.3);
+            transform: scale(1.05);
+        }
+
+        .map-transition {
+            transition: all 0.8s ease-in-out;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.8s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-white">
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-blue-900 to-slate-800 py-6 px-4">
+        <div class="max-w-7xl mx-auto">
+            <h1 class="text-4xl font-bold text-center mb-2">Shape of Jakarta</h1>
+            <p class="text-xl text-blue-200 text-center">Understanding Flooding Through Morphological History</p>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="bg-slate-800 py-4 px-4 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto flex justify-center space-x-8">
+            <button onclick="showSection('timeline')" class="nav-btn px-6 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 transition-colors">Timeline Map</button>
+            <button onclick="showSection('wisdom')" class="nav-btn px-6 py-2 rounded-lg bg-slate-600 hover:bg-slate-700 transition-colors">Local Wisdom</button>
+            <button onclick="showSection('memory')" class="nav-btn px-6 py-2 rounded-lg bg-slate-600 hover:bg-slate-700 transition-colors">Memory Mapping</button>
+        </div>
+    </nav>
+
+    <!-- Timeline Map Section -->
+    <section id="timeline-section" class="section-content">
+        <div class="max-w-7xl mx-auto p-6">
+            <h2 class="text-3xl font-bold mb-6 text-center">Narrative Timeline: Jakarta's Transformation</h2>
+
+            <!-- Timeline Slider -->
+            <div class="mb-8">
+                <div class="timeline-slider rounded-lg p-6">
+                    <label class="block text-lg font-semibold mb-4">Era: <span id="era-label">Pre-Colonial (1500s)</span></label>
+                    <input type="range" id="timeline-slider" min="0" max="4" value="0"
+                           class="w-full h-3 bg-blue-200 rounded-lg appearance-none cursor-pointer slider">
+                    <div class="flex justify-between text-sm mt-2">
+                        <span>1500s</span>
+                        <span>1600s</span>
+                        <span>1800s</span>
+                        <span>1950s</span>
+                        <span>2024</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interactive Map Display -->
+            <div class="grid lg:grid-cols-2 gap-8">
+                <div class="map-container rounded-xl p-8 h-96 relative overflow-hidden">
+                    <div id="map-display" class="w-full h-full flex flex-col items-center justify-center">
+                        <!-- Pre-colonial map representation -->
+                        <div class="floating-element relative">
+                            <svg width="350" height="250" viewBox="0 0 350 250" class="mx-auto cursor-pointer">
+                                <!-- Background -->
+                                <rect width="350" height="250" fill="#0f172a" opacity="0.8"/>
+
+                                <!-- Rivers and waterways -->
+                                <path id="main-river" d="M50 125 Q175 100 300 140" stroke="#3b82f6" stroke-width="10" fill="none" class="water-animation clickable-element" onclick="showMapDetail('river')"/>
+                                <path id="tributary-1" d="M80 80 Q200 60 320 100" stroke="#60a5fa" stroke-width="7" fill="none" class="water-animation clickable-element" onclick="showMapDetail('tributary')"/>
+                                <path id="tributary-2" d="M60 170 Q180 150 310 180" stroke="#60a5fa" stroke-width="6" fill="none" class="water-animation"/>
+
+                                <!-- Natural landscape -->
+                                <circle id="forest-1" cx="120" cy="180" r="25" fill="#22c55e" opacity="0.8" class="clickable-element" onclick="showMapDetail('forest')"/>
+                                <circle id="forest-2" cx="220" cy="190" r="30" fill="#22c55e" opacity="0.8" class="clickable-element" onclick="showMapDetail('forest')"/>
+                                <circle id="forest-3" cx="170" cy="170" r="20" fill="#22c55e" opacity="0.8"/>
+                                <circle id="wetland-1" cx="100" cy="100" r="15" fill="#059669" opacity="0.6" class="clickable-element" onclick="showMapDetail('wetland')"/>
+                                <circle id="wetland-2" cx="250" cy="120" r="18" fill="#059669" opacity="0.6" class="clickable-element" onclick="showMapDetail('wetland')"/>
+
+                                <!-- Traditional settlements -->
+                                <g id="settlement-1" class="clickable-element" onclick="showMapDetail('settlement')" transform="translate(140,110)">
+                                    <rect x="-4" y="-4" width="8" height="8" fill="#fbbf24" rx="2"/>
+                                    <circle cx="0" cy="0" r="8" fill="none" stroke="#fbbf24" stroke-width="1" opacity="0.5"/>
+                                </g>
+                                <g id="settlement-2" class="clickable-element" onclick="showMapDetail('settlement')" transform="translate(200,130)">
+                                    <rect x="-4" y="-4" width="8" height="8" fill="#fbbf24" rx="2"/>
+                                    <circle cx="0" cy="0" r="8" fill="none" stroke="#fbbf24" stroke-width="1" opacity="0.5"/>
+                                </g>
+
+                                <!-- Flood zones (initially hidden) -->
+                                <ellipse id="flood-zone-1" cx="175" cy="125" rx="80" ry="40" fill="#dc2626" opacity="0" class="flood-zone"/>
+                                <ellipse id="flood-zone-2" cx="200" cy="160" rx="60" ry="30" fill="#dc2626" opacity="0" class="flood-zone"/>
+
+                                <!-- Development areas (initially hidden) -->
+                                <rect id="urban-area-1" x="100" y="90" width="150" height="80" fill="#64748b" opacity="0" class="urban-development"/>
+                                <rect id="urban-area-2" x="80" y="140" width="200" height="60" fill="#64748b" opacity="0" class="urban-development"/>
+                            </svg>
+
+                            <!-- Interactive Legend -->
+                            <div class="absolute top-2 right-2 bg-slate-800 bg-opacity-90 rounded-lg p-3 text-xs">
+                                <div class="space-y-1">
+                                    <div class="flex items-center space-x-2">
+                                        <div class="w-3 h-1 bg-blue-500"></div>
+                                        <span>Rivers</span>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                                        <span>Forests</span>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <div class="w-3 h-3 bg-yellow-500"></div>
+                                        <span>Settlements</span>
+                                    </div>
+                                    <div id="flood-legend" class="flex items-center space-x-2 opacity-0 transition-opacity">
+                                        <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                                        <span>Flood Risk</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-4 text-center">
+                            <h3 id="map-title" class="text-xl font-semibold">Natural River Systems</h3>
+                            <p id="map-description" class="text-blue-200 text-sm">Click on elements to explore • Meandering rivers with natural flood plains</p>
+                        </div>
+                    </div>
+
+                    <!-- Map Detail Modal -->
+                    <div id="map-detail-modal" class="hidden absolute inset-0 bg-black bg-opacity-80 flex items-center justify-center z-10">
+                        <div class="bg-slate-800 rounded-lg p-6 max-w-sm mx-4">
+                            <div class="flex justify-between items-center mb-4">
+                                <h4 id="detail-title" class="text-lg font-semibold"></h4>
+                                <button onclick="closeMapDetail()" class="text-gray-400 hover:text-white">&times;</button>
+                            </div>
+                            <div id="detail-content" class="text-sm text-slate-300"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-800 rounded-xl p-6">
+                    <h3 class="text-xl font-semibold mb-4">Era Impact Analysis</h3>
+                    <div id="impact-content">
+                        <div class="space-y-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                                <span>Natural water absorption systems intact</span>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                                <span>Minimal urban development</span>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                                <span>Traditional water management practices</span>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+                                <span>Seasonal flooding as natural cycle</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Local Wisdom Section -->
+    <section id="wisdom-section" class="section-content hidden">
+        <div class="max-w-7xl mx-auto p-6">
+            <h2 class="text-3xl font-bold mb-6 text-center">Interactive Local Wisdom Archive</h2>
+            <p class="text-xl text-center text-slate-300 mb-8">Pre-colonial water engineering principles for sustainable flood management</p>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Wisdom Card 1 -->
+                <div class="wisdom-card rounded-xl p-6 cursor-pointer" onclick="showWisdomDetail('situ')">
+                    <div class="text-center mb-4">
+                        <svg width="80" height="80" viewBox="0 0 80 80" class="mx-auto">
+                            <circle cx="40" cy="40" r="30" fill="#3b82f6" opacity="0.3"/>
+                            <circle cx="40" cy="40" r="20" fill="#1d4ed8" opacity="0.5"/>
+                            <circle cx="40" cy="40" r="10" fill="#1e40af"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2">Situ System</h3>
+                    <p class="text-sm text-green-200">Natural retention ponds that store excess water during rainy seasons</p>
+                </div>
+
+                <!-- Wisdom Card 2 -->
+                <div class="wisdom-card rounded-xl p-6 cursor-pointer" onclick="showWisdomDetail('kanal')">
+                    <div class="text-center mb-4">
+                        <svg width="80" height="80" viewBox="0 0 80 80" class="mx-auto">
+                            <path d="M10 40 L70 40" stroke="#3b82f6" stroke-width="8"/>
+                            <path d="M10 35 L70 35" stroke="#60a5fa" stroke-width="4"/>
+                            <path d="M10 45 L70 45" stroke="#60a5fa" stroke-width="4"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2">Traditional Canals</h3>
+                    <p class="text-sm text-green-200">Interconnected waterways that direct flow and prevent stagnation</p>
+                </div>
+
+                <!-- Wisdom Card 3 -->
+                <div class="wisdom-card rounded-xl p-6 cursor-pointer" onclick="showWisdomDetail('rumah')">
+                    <div class="text-center mb-4">
+                        <svg width="80" height="80" viewBox="0 0 80 80" class="mx-auto">
+                            <polygon points="40,20 60,35 60,55 20,55 20,35" fill="#fbbf24"/>
+                            <rect x="30" y="45" width="20" height="10" fill="#92400e"/>
+                            <polygon points="40,15 65,32 15,32" fill="#dc2626"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2">Elevated Architecture</h3>
+                    <p class="text-sm text-green-200">Stilt houses and raised foundations adapted to flood cycles</p>
+                </div>
+            </div>
+
+            <!-- Wisdom Detail Modal -->
+            <div id="wisdom-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div class="bg-slate-800 rounded-xl p-8 max-w-2xl mx-4">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 id="wisdom-title" class="text-2xl font-bold"></h3>
+                        <button onclick="closeWisdomDetail()" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+                    </div>
+                    <div id="wisdom-detail-content"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Memory Mapping Section -->
+    <section id="memory-section" class="section-content hidden">
+        <div class="max-w-7xl mx-auto p-6">
+            <h2 class="text-3xl font-bold mb-6 text-center">Participatory Memory Mapping</h2>
+            <p class="text-xl text-center text-slate-300 mb-8">Share your flood experiences and help build Jakarta's collective memory</p>
+
+            <div class="grid lg:grid-cols-3 gap-8">
+                <!-- Contribution Form -->
+                <div class="lg:col-span-1">
+                    <div class="bg-slate-800 rounded-xl p-6">
+                        <h3 class="text-xl font-semibold mb-4">Share Your Story</h3>
+                        <form id="memory-form" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Your Name</label>
+                                <input type="text" id="contributor-name" class="w-full px-3 py-2 bg-slate-700 rounded-lg border border-slate-600 focus:border-blue-500 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Location</label>
+                                <input type="text" id="flood-location" class="w-full px-3 py-2 bg-slate-700 rounded-lg border border-slate-600 focus:border-blue-500 focus:outline-none" placeholder="e.g., Kemang, South Jakarta">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Year of Experience</label>
+                                <input type="number" id="flood-year" class="w-full px-3 py-2 bg-slate-700 rounded-lg border border-slate-600 focus:border-blue-500 focus:outline-none" min="1950" max="2024">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Your Story</label>
+                                <textarea id="flood-story" rows="4" class="w-full px-3 py-2 bg-slate-700 rounded-lg border border-slate-600 focus:border-blue-500 focus:outline-none" placeholder="Describe your flood experience..."></textarea>
+                            </div>
+                            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 py-2 px-4 rounded-lg transition-colors">Add to Memory Map</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Memory Stories Display -->
+                <div class="lg:col-span-2">
+                    <h3 class="text-xl font-semibold mb-4">Community Stories</h3>
+                    <div id="memory-stories" class="space-y-4 max-h-96 overflow-y-auto">
+                        <!-- Sample stories -->
+                        <div class="memory-card bg-slate-800 rounded-lg p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="font-semibold text-blue-300">Sari - Kemang</h4>
+                                <span class="text-sm text-slate-400">2020</span>
+                            </div>
+                            <p class="text-sm text-slate-300">"The 2020 flood reached our second floor. We had to evacuate by boat. My grandmother remembered similar floods from the 1960s, but she said they used to drain faster because there were more green spaces."</p>
+                        </div>
+
+                        <div class="memory-card bg-slate-800 rounded-lg p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="font-semibold text-blue-300">Ahmad - Cawang</h4>
+                                <span class="text-sm text-slate-400">2013</span>
+                            </div>
+                            <p class="text-sm text-slate-300">"During the 2013 floods, our traditional raised house saved us while newer buildings around us were completely submerged. The old architecture knew something we forgot."</p>
+                        </div>
+
+                        <div class="memory-card bg-slate-800 rounded-lg p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="font-semibold text-blue-300">Maya - Pluit</h4>
+                                <span class="text-sm text-slate-400">2007</span>
+                            </div>
+                            <p class="text-sm text-slate-300">"I remember when this area still had mangroves. The 2007 flood showed us what we lost when they were cleared for development. Nature was our first line of defense."</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-slate-800 py-8 px-4 mt-12">
+        <div class="max-w-7xl mx-auto text-center">
+            <p class="text-slate-400">Shape of Jakarta - Building Understanding Through Collective Memory</p>
+            <p class="text-sm text-slate-500 mt-2">A collaborative platform for flood resilience and community dialogue</p>
+        </div>
+    </footer>
+
+    <script>
+        // Timeline data with interactive maps
+        const timelineData = {
+            0: {
+                era: "Pre-Colonial (1500s)",
+                title: "Natural River Systems",
+                description: "Click on elements to explore • Meandering rivers with natural flood plains",
+                mapElements: {
+                    rivers: { opacity: 1, display: true },
+                    forests: { opacity: 0.8, display: true },
+                    wetlands: { opacity: 0.6, display: true },
+                    settlements: { opacity: 1, display: true, count: 2 },
+                    urban: { opacity: 0, display: false },
+                    floods: { opacity: 0, display: false }
+                },
+                impacts: [
+                    { status: "green", text: "Natural water absorption systems intact" },
+                    { status: "green", text: "Minimal urban development" },
+                    { status: "green", text: "Traditional water management practices" },
+                    { status: "blue", text: "Seasonal flooding as natural cycle" }
+                ]
+            },
+            1: {
+                era: "Dutch Colonial (1600s)",
+                title: "Canal Construction Era",
+                description: "Click to explore colonial infrastructure • Straight canals and early urban planning",
+                mapElements: {
+                    rivers: { opacity: 0.8, display: true, straightened: true },
+                    forests: { opacity: 0.5, display: true },
+                    wetlands: { opacity: 0.3, display: true },
+                    settlements: { opacity: 1, display: true, count: 5 },
+                    urban: { opacity: 0.3, display: true },
+                    floods: { opacity: 0, display: false }
+                },
+                impacts: [
+                    { status: "yellow", text: "First artificial drainage systems" },
+                    { status: "green", text: "Improved water flow control" },
+                    { status: "yellow", text: "Beginning of natural system modification" },
+                    { status: "blue", text: "Batavia city establishment" }
+                ]
+            },
+            2: {
+                era: "Colonial Expansion (1800s)",
+                title: "Urban Expansion Period",
+                description: "Explore development impacts • Increased development and land reclamation",
+                mapElements: {
+                    rivers: { opacity: 0.6, display: true, straightened: true },
+                    forests: { opacity: 0.3, display: true },
+                    wetlands: { opacity: 0.1, display: true },
+                    settlements: { opacity: 1, display: true, count: 10 },
+                    urban: { opacity: 0.6, display: true },
+                    floods: { opacity: 0.2, display: true }
+                },
+                impacts: [
+                    { status: "yellow", text: "Significant land use changes" },
+                    { status: "red", text: "Natural wetlands filled" },
+                    { status: "yellow", text: "Population growth pressure" },
+                    { status: "red", text: "First major flood problems" }
+                ]
+            },
+            3: {
+                era: "Independence Era (1950s)",
+                title: "Rapid Urbanization",
+                description: "See urban growth effects • Post-independence development boom",
+                mapElements: {
+                    rivers: { opacity: 0.4, display: true, straightened: true },
+                    forests: { opacity: 0.1, display: true },
+                    wetlands: { opacity: 0.05, display: true },
+                    settlements: { opacity: 1, display: true, count: 20 },
+                    urban: { opacity: 0.8, display: true },
+                    floods: { opacity: 0.4, display: true }
+                },
+                impacts: [
+                    { status: "red", text: "Massive rural-urban migration" },
+                    { status: "red", text: "Informal settlements in flood zones" },
+                    { status: "yellow", text: "Infrastructure development" },
+                    { status: "red", text: "Increased flood frequency" }
+                ]
+            },
+            4: {
+                era: "Modern Jakarta (2024)",
+                title: "Megacity Crisis",
+                description: "Explore current challenges • Dense urban landscape with critical flood risks",
+                mapElements: {
+                    rivers: { opacity: 0.3, display: true, straightened: true, polluted: true },
+                    forests: { opacity: 0.05, display: true },
+                    wetlands: { opacity: 0.02, display: true },
+                    settlements: { opacity: 1, display: true, count: 50 },
+                    urban: { opacity: 1, display: true },
+                    floods: { opacity: 0.7, display: true }
+                },
+                impacts: [
+                    { status: "red", text: "Severe land subsidence" },
+                    { status: "red", text: "Overwhelmed drainage systems" },
+                    { status: "red", text: "Climate change amplification" },
+                    { status: "yellow", text: "New adaptation strategies needed" }
+                ]
+            }
+        };
+
+        // Wisdom details
+        const wisdomDetails = {
+            situ: {
+                title: "Situ System - Natural Water Storage",
+                content: `
+                    <div class="space-y-4">
+                        <div class="text-center mb-6">
+                            <svg width="200" height="150" viewBox="0 0 200 150" class="mx-auto">
+                                <circle cx="100" cy="75" r="60" fill="#3b82f6" opacity="0.3"/>
+                                <circle cx="100" cy="75" r="40" fill="#1d4ed8" opacity="0.5"/>
+                                <circle cx="100" cy="75" r="20" fill="#1e40af"/>
+                                <path d="M40 75 Q100 50 160 75" stroke="#60a5fa" stroke-width="4" fill="none"/>
+                                <circle cx="80" cy="45" r="8" fill="#22c55e"/>
+                                <circle cx="120" cy="45" r="8" fill="#22c55e"/>
+                                <circle cx="100" cy="35" r="6" fill="#22c55e"/>
+                            </svg>
+                        </div>
+                        <p class="text-slate-300">The Situ system represents traditional Indonesian water management wisdom. These natural retention ponds served multiple functions:</p>
+                        <ul class="list-disc list-inside space-y-2 text-slate-300">
+                            <li><strong>Flood Control:</strong> Stored excess rainwater during monsoons</li>
+                            <li><strong>Groundwater Recharge:</strong> Allowed water to slowly infiltrate soil</li>
+                            <li><strong>Ecosystem Services:</strong> Supported biodiversity and local climate</li>
+                            <li><strong>Community Resource:</strong> Provided water for daily needs and agriculture</li>
+                        </ul>
+                        <div class="bg-blue-900 p-4 rounded-lg">
+                            <h4 class="font-semibold text-blue-200 mb-2">Modern Application</h4>
+                            <p class="text-sm text-blue-100">Contemporary urban planning can integrate situ principles through retention parks, bioswales, and constructed wetlands that manage stormwater while providing community spaces.</p>
+                        </div>
+                    </div>
+                `
+            },
+            kanal: {
+                title: "Traditional Canal Networks",
+                content: `
+                    <div class="space-y-4">
+                        <div class="text-center mb-6">
+                            <svg width="200" height="150" viewBox="0 0 200 150" class="mx-auto">
+                                <path d="M20 75 L180 75" stroke="#3b82f6" stroke-width="12"/>
+                                <path d="M20 65 L180 65" stroke="#60a5fa" stroke-width="6"/>
+                                <path d="M20 85 L180 85" stroke="#60a5fa" stroke-width="6"/>
+                                <path d="M100 20 L100 130" stroke="#3b82f6" stroke-width="8"/>
+                                <path d="M50 40 L50 110" stroke="#60a5fa" stroke-width="6"/>
+                                <path d="M150 40 L150 110" stroke="#60a5fa" stroke-width="6"/>
+                            </svg>
+                        </div>
+                        <p class="text-slate-300">Traditional canal systems were designed with deep understanding of water flow dynamics and seasonal patterns:</p>
+                        <ul class="list-disc list-inside space-y-2 text-slate-300">
+                            <li><strong>Interconnected Design:</strong> Multiple pathways prevented bottlenecks</li>
+                            <li><strong>Natural Gradients:</strong> Followed topography for efficient drainage</li>
+                            <li><strong>Maintenance Culture:</strong> Community responsibility for upkeep</li>
+                            <li><strong>Multi-purpose Use:</strong> Transportation, irrigation, and waste management</li>
+                        </ul>
+                        <div class="bg-green-900 p-4 rounded-lg">
+                            <h4 class="font-semibold text-green-200 mb-2">Lessons for Today</h4>
+                            <p class="text-sm text-green-100">Modern drainage systems can learn from traditional redundancy and community stewardship models, creating resilient networks that adapt to changing conditions.</p>
+                        </div>
+                    </div>
+                `
+            },
+            rumah: {
+                title: "Elevated Architecture Wisdom",
+                content: `
+                    <div class="space-y-4">
+                        <div class="text-center mb-6">
+                            <svg width="200" height="150" viewBox="0 0 200 150" class="mx-auto">
+                                <polygon points="100,40 130,55 130,85 70,85 70,55" fill="#fbbf24"/>
+                                <rect x="80" y="75" width="40" height="20" fill="#92400e"/>
+                                <polygon points="100,35 140,52 60,52" fill="#dc2626"/>
+                                <line x1="75" y1="85" x2="75" y2="110" stroke="#8b5cf6" stroke-width="4"/>
+                                <line x1="125" y1="85" x2="125" y2="110" stroke="#8b5cf6" stroke-width="4"/>
+                                <line x1="90" y1="85" x2="90" y2="110" stroke="#8b5cf6" stroke-width="4"/>
+                                <line x1="110" y1="85" x2="110" y2="110" stroke="#8b5cf6" stroke-width="4"/>
+                                <path d="M50 110 Q100 105 150 110" stroke="#3b82f6" stroke-width="6" fill="none"/>
+                            </svg>
+                        </div>
+                        <p class="text-slate-300">Traditional elevated architecture demonstrates sophisticated adaptation to flood-prone environments:</p>
+                        <ul class="list-disc list-inside space-y-2 text-slate-300">
+                            <li><strong>Stilt Construction:</strong> Raised living spaces above flood levels</li>
+                            <li><strong>Flexible Materials:</strong> Bamboo and wood that could flex with water pressure</li>
+                            <li><strong>Ventilation Design:</strong> Promoted air circulation and quick drying</li>
+                            <li><strong>Community Planning:</strong> Elevated walkways connected neighborhoods</li>
+                        </ul>
+                        <div class="bg-yellow-900 p-4 rounded-lg">
+                            <h4 class="font-semibold text-yellow-200 mb-2">Contemporary Relevance</h4>
+                            <p class="text-sm text-yellow-100">Modern flood-resilient architecture can incorporate elevation principles, amphibious foundations, and flexible building systems that adapt to water level changes.</p>
+                        </div>
+                    </div>
+                `
+            }
+        };
+
+        // Navigation functionality
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.section-content').forEach(section => {
+                section.classList.add('hidden');
+            });
+
+            // Show selected section
+            document.getElementById(sectionName + '-section').classList.remove('hidden');
+
+            // Update navigation buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-600');
+                btn.classList.add('bg-slate-600');
+            });
+            event.target.classList.remove('bg-slate-600');
+            event.target.classList.add('bg-blue-600');
+        }
+
+        // Map detail information
+        const mapDetails = {
+            river: {
+                title: "River System",
+                content: "Jakarta's rivers were originally meandering waterways that naturally managed flood cycles. Over time, they've been straightened and channeled, reducing their natural flood management capacity."
+            },
+            tributary: {
+                title: "Tributary Networks",
+                content: "Smaller waterways that fed into main rivers, creating a complex drainage system. Many have been filled or diverted for urban development."
+            },
+            forest: {
+                title: "Natural Forest Cover",
+                content: "Original forests provided crucial water absorption and flood protection. Their removal has significantly increased surface runoff and flood risk."
+            },
+            wetland: {
+                title: "Wetland Systems",
+                content: "Natural sponges that absorbed excess water during floods. Most have been drained and filled for development, eliminating critical flood protection."
+            },
+            settlement: {
+                title: "Human Settlements",
+                content: "Traditional settlements were built with flood awareness - elevated structures and locations that worked with natural water cycles."
+            },
+            urban: {
+                title: "Urban Development",
+                content: "Modern development has created impermeable surfaces that increase runoff and reduce natural water absorption, amplifying flood risks."
+            },
+            flood: {
+                title: "Flood Risk Areas",
+                content: "Areas most vulnerable to flooding due to low elevation, poor drainage, or proximity to water bodies. Risk has increased with urban development."
+            }
+        };
+
+        // Map interaction functions
+        function showMapDetail(elementType) {
+            const detail = mapDetails[elementType];
+            if (detail) {
+                document.getElementById('detail-title').textContent = detail.title;
+                document.getElementById('detail-content').textContent = detail.content;
+                document.getElementById('map-detail-modal').classList.remove('hidden');
+            }
+        }
+
+        function closeMapDetail() {
+            document.getElementById('map-detail-modal').classList.add('hidden');
+        }
+
+        // Update map based on timeline
+        function updateMap(timelineValue) {
+            const data = timelineData[timelineValue];
+            const elements = data.mapElements;
+
+            // Update map title and description
+            document.getElementById('map-title').textContent = data.title;
+            document.getElementById('map-description').textContent = data.description;
+
+            // Update SVG elements based on timeline data
+            updateMapElements(elements);
+
+            // Update legend
+            updateLegend(elements);
+        }
+
+        function updateMapElements(elements) {
+            // Update rivers
+            const rivers = document.querySelectorAll('#main-river, #tributary-1, #tributary-2');
+            rivers.forEach(river => {
+                river.style.opacity = elements.rivers.opacity;
+                river.style.display = elements.rivers.display ? 'block' : 'none';
+                if (elements.rivers.straightened) {
+                    river.setAttribute('d', river.getAttribute('d').replace(/Q\d+\s\d+/g, 'L'));
+                }
+                if (elements.rivers.polluted) {
+                    river.setAttribute('stroke', '#7f1d1d');
+                }
+            });
+
+            // Update forests
+            const forests = document.querySelectorAll('#forest-1, #forest-2, #forest-3');
+            forests.forEach(forest => {
+                forest.style.opacity = elements.forests.opacity;
+                forest.style.display = elements.forests.display ? 'block' : 'none';
+            });
+
+            // Update wetlands
+            const wetlands = document.querySelectorAll('#wetland-1, #wetland-2');
+            wetlands.forEach(wetland => {
+                wetland.style.opacity = elements.wetlands.opacity;
+                wetland.style.display = elements.wetlands.display ? 'block' : 'none';
+            });
+
+            // Update settlements
+            const settlements = document.querySelectorAll('#settlement-1, #settlement-2');
+            settlements.forEach((settlement, index) => {
+                settlement.style.opacity = elements.settlements.opacity;
+                settlement.style.display = (index < elements.settlements.count) ? 'block' : 'none';
+            });
+
+            // Update urban areas
+            const urbanAreas = document.querySelectorAll('.urban-development');
+            urbanAreas.forEach(area => {
+                area.style.opacity = elements.urban.opacity;
+                area.style.display = elements.urban.display ? 'block' : 'none';
+            });
+
+            // Update flood zones
+            const floodZones = document.querySelectorAll('.flood-zone');
+            floodZones.forEach(zone => {
+                zone.style.opacity = elements.floods.opacity;
+                zone.style.display = elements.floods.display ? 'block' : 'none';
+            });
+        }
+
+        function updateLegend(elements) {
+            const floodLegend = document.getElementById('flood-legend');
+            if (elements.floods.display && elements.floods.opacity > 0) {
+                floodLegend.style.opacity = '1';
+            } else {
+                floodLegend.style.opacity = '0';
+            }
+        }
+
+        // Timeline slider functionality
+        document.getElementById('timeline-slider').addEventListener('input', function(e) {
+            const value = parseInt(e.target.value);
+            const data = timelineData[value];
+
+            // Update era label
+            document.getElementById('era-label').textContent = data.era;
+
+            // Update interactive map
+            updateMap(value);
+
+            // Update impact content
+            const impactContent = document.getElementById('impact-content');
+            const impactHTML = data.impacts.map(impact => {
+                const colorClass = impact.status === 'green' ? 'bg-green-500' :
+                                 impact.status === 'yellow' ? 'bg-yellow-500' :
+                                 impact.status === 'red' ? 'bg-red-500' : 'bg-blue-500';
+                return `
+                    <div class="flex items-center space-x-3">
+                        <div class="w-3 h-3 ${colorClass} rounded-full"></div>
+                        <span>${impact.text}</span>
+                    </div>
+                `;
+            }).join('');
+
+            impactContent.innerHTML = `<div class="space-y-4">${impactHTML}</div>`;
+        });
+
+        // Wisdom modal functionality
+        function showWisdomDetail(wisdomType) {
+            const wisdom = wisdomDetails[wisdomType];
+            document.getElementById('wisdom-title').textContent = wisdom.title;
+            document.getElementById('wisdom-detail-content').innerHTML = wisdom.content;
+            document.getElementById('wisdom-modal').classList.remove('hidden');
+        }
+
+        function closeWisdomDetail() {
+            document.getElementById('wisdom-modal').classList.add('hidden');
+        }
+
+        // Memory form functionality
+        document.getElementById('memory-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const name = document.getElementById('contributor-name').value;
+            const location = document.getElementById('flood-location').value;
+            const year = document.getElementById('flood-year').value;
+            const story = document.getElementById('flood-story').value;
+
+            if (name && location && year && story) {
+                // Create new memory card
+                const memoryCard = document.createElement('div');
+                memoryCard.className = 'memory-card bg-slate-800 rounded-lg p-4';
+                memoryCard.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <h4 class="font-semibold text-blue-300">${name} - ${location}</h4>
+                        <span class="text-sm text-slate-400">${year}</span>
+                    </div>
+                    <p class="text-sm text-slate-300">"${story}"</p>
+                `;
+
+                // Add to stories container
+                const storiesContainer = document.getElementById('memory-stories');
+                storiesContainer.insertBefore(memoryCard, storiesContainer.firstChild);
+
+                // Clear form
+                document.getElementById('memory-form').reset();
+
+                // Show success message
+                alert('Thank you for sharing your story! Your experience has been added to Jakarta\'s collective memory.');
+            }
+        });
+
+        // Close modal when clicking outside
+        document.getElementById('wisdom-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeWisdomDetail();
+            }
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96c683fc162dfd97',t:'MTc1NDczNDc3MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
