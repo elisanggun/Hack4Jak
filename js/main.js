@@ -35,16 +35,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (modal) modal.classList.add('hidden');
     }
     
+    /  // --- PERUBAHAN DI SINI: Tambahkan Pengecekan ---
     // Event listener untuk form Memory Mapping (dari kode asli Anda)
     const memoryForm = document.getElementById('memory-form');
-    if (memoryForm) {
+    if (memoryForm) { // Hanya jalankan jika elemen 'memory-form' ditemukan
         memoryForm.addEventListener('submit', function(e) {
             e.preventDefault();
             const name = document.getElementById('contributor-name').value;
             const location = document.getElementById('flood-location').value;
             const year = document.getElementById('flood-year').value;
             const story = document.getElementById('flood-story').value;
-            
+
             if (name && location && year && story) {
                 const storiesContainer = document.getElementById('memory-stories');
                 const newStory = document.createElement('div');
@@ -57,7 +58,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     <p class="text-sm text-slate-300">"${story}"</p>`;
                 storiesContainer.insertBefore(newStory, storiesContainer.firstChild);
                 memoryForm.reset();
-                // CATATAN: alert() tidak ideal, pertimbangkan untuk menggunakan modal custom.
                 alert('Thank you for sharing your story!');
             }
         });
