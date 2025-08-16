@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shape of Jakarta - Interactive Flooding Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- MEMUAT ASET DARI LEAFLET.JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <!-- Memuat CSS lokal Anda -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-slate-900 text-white font-sans">
+    <!-- Header, Navigasi, dan semua bagian lain tetap sama... -->
+
+    <!-- Timeline Map Section -->
+    <section id="timeline-section" class="section-content">
+        <div class="max-w-7xl mx-auto p-6">
+            <!-- ... Slider Anda tidak berubah ... -->
+
+            <!-- Interactive Map Display -->
+            <div class="grid lg:grid-cols-2 gap-8">
+                <div id="map-container" class="bg-slate-800 rounded-xl h-[500px] relative overflow-hidden">
+                    <!-- Wadah untuk peta Leaflet -->
+                    <div id="leafletMapDiv" class="w-full h-full"></div>
+                </div>
+
+                <div class="bg-slate-800 rounded-xl p-6">
+                    <h3 class="text-xl font-semibold mb-4">Era Impact Analysis</h3>
+                    <div id="impact-content">
+                        <!-- Konten dampak akan diisi oleh JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Local Wisdom Section -->
+    <section id="wisdom-section" class="section-content hidden">
+        <div class="max-w-7xl mx-auto p-6">
+            <h2 class="text-3xl font-bold mb-6 text-center">Interactive Local Wisdom Archive</h2>
+            <p class="text-xl text-center text-slate-300 mb-8">Pre-colonial water engineering principles for sustainable flood management</p>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Wisdom Card 1 -->
+                <div class="wisdom-card rounded-xl p-6 cursor-pointer" onclick="showWisdomDetail('situ')">
+                    <div class="text-center mb-4">
+                        <svg width="80" height="80" viewBox="0 0 80 80" class="mx-auto">
+                            <circle cx="40" cy="40" r="30" fill="#3b82f6" opacity="0.3"/>
+                            <circle cx="40" cy="40" r="20" fill="#1d4ed8" opacity="0.5"/>
+                            <circle cx="40" cy="40" r="10" fill="#1e40af"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2">Situ System</h3>
+                    <p class="text-sm text-green-200">Natural retention ponds that store excess water during rainy seasons</p>
+                </div>
+
+                <!-- Wisdom Card 2 -->
+                <div class="wisdom-card rounded-xl p-6 cursor-pointer" onclick="showWisdomDetail('kanal')">
+                    <div class="text-center mb-4">
+                        <svg width="80" height="80" viewBox="0 0 80 80" class="mx-auto">
+                            <path d="M10 40 L70 40" stroke="#3b82f6" stroke-width="8"/>
+                            <path d="M10 35 L70 35" stroke="#60a5fa" stroke-width="4"/>
+                            <path d="M10 45 L70 45" stroke="#60a5fa" stroke-width="4"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2">Traditional Canals</h3>
+                    <p class="text-sm text-green-200">Interconnected waterways that direct flow and prevent stagnation</p>
+                </div>
+
+                <!-- Wisdom Card 3 -->
+                <div class="wisdom-card rounded-xl p-6 cursor-pointer" onclick="showWisdomDetail('rumah')">
+                    <div class="text-center mb-4">
+                        <svg width="80" height="80" viewBox="0 0 80 80" class="mx-auto">
+                            <polygon points="40,20 60,35 60,55 20,55 20,35" fill="#fbbf24"/>
+                            <rect x="30" y="45" width="20" height="10" fill="#92400e"/>
+                            <polygon points="40,15 65,32 15,32" fill="#dc2626"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2">Elevated Architecture</h3>
+                    <p class="text-sm text-green-200">Stilt houses and raised foundations adapted to flood cycles</p>
+                </div>
+            </div>
+
+            <!-- Wisdom Detail Modal -->
+            <div id="wisdom-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div class="bg-slate-800 rounded-xl p-8 max-w-2xl mx-4">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 id="wisdom-title" class="text-2xl font-bold"></h3>
+                        <button onclick="closeWisdomDetail()" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+                    </div>
+                    <div id="wisdom-detail-content"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Memory Mapping Section -->
+    <section id="memory-section" class="section-content hidden">
+        <div class="max-w-7xl mx-auto p-6">
+            <h2 class="text-3xl font-bold mb-6 text-center">Participatory Memory Mapping</h2>
+            <p class="text-xl text-center text-slate-300 mb-8">Share your flood experiences and help build Jakarta's collective memory</p>
+
+            <div class="grid lg:grid-cols-3 gap-8">
+                <!-- Contribution Form -->
+                <div class="lg:col-span-1">
+                    <div class="bg-slate-800 rounded-xl p-6">
+                        <h3 class="text-xl font-semibold mb-4">Share Your Story</h3>
+                        <form id="memory-form" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Your Name</label>
+                                <input type="text" id="contributor-name" class="w-full px-3 py-2 bg-slate-700 rounded-lg border border-slate-600 focus:border-blue-500 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Location</label>
+                                <input type="text" id="flood-location" class="w-full px-3 py-2 bg-slate-700 rounded-lg border border-slate-600 focus:border-blue-500 focus:outline-none" placeholder="e.g., Kemang, South Jakarta">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Year of Experience</label>
+                                <input type="number" id="flood-year" class="w-full px-3 py-2 bg-slate-700 rounded-lg border border-slate-600 focus:border-blue-500 focus:outline-none" min="1950" max="2024">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Your Story</label>
+                                <textarea id="flood-story" rows="4" class="w-full px-3 py-2 bg-slate-700 rounded-lg border border-slate-600 focus:border-blue-500 focus:outline-none" placeholder="Describe your flood experience..."></textarea>
+                            </div>
+                            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 py-2 px-4 rounded-lg transition-colors">Add to Memory Map</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Memory Stories Display -->
+                <div class="lg:col-span-2">
+                    <h3 class="text-xl font-semibold mb-4">Community Stories</h3>
+                    <div id="memory-stories" class="space-y-4 max-h-96 overflow-y-auto">
+                        <!-- Sample stories -->
+                        <div class="memory-card bg-slate-800 rounded-lg p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="font-semibold text-blue-300">Sari - Kemang</h4>
+                                <span class="text-sm text-slate-400">2020</span>
+                            </div>
+                            <p class="text-sm text-slate-300">"The 2020 flood reached our second floor. We had to evacuate by boat. My grandmother remembered similar floods from the 1960s, but she said they used to drain faster because there were more green spaces."</p>
+                        </div>
+
+                        <div class="memory-card bg-slate-800 rounded-lg p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="font-semibold text-blue-300">Ahmad - Cawang</h4>
+                                <span class="text-sm text-slate-400">2013</span>
+                            </div>
+                            <p class="text-sm text-slate-300">"During the 2013 floods, our traditional raised house saved us while newer buildings around us were completely submerged. The old architecture knew something we forgot."</p>
+                        </div>
+
+                        <div class="memory-card bg-slate-800 rounded-lg p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="font-semibold text-blue-300">Maya - Pluit</h4>
+                                <span class="text-sm text-slate-400">2007</span>
+                            </div>
+                            <p class="text-sm text-slate-300">"I remember when this area still had mangroves. The 2007 flood showed us what we lost when they were cleared for development. Nature was our first line of defense."</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+        <!-- Footer -->
+    <footer class="bg-slate-800 py-8 px-4 mt-12">
+        <!-- ... Konten Footer Anda ... -->
+    </footer>
+
+    <!-- Memuat JavaScript lokal Anda -->
+    <script src="js/main.js"></script>
+</body>
+</html>

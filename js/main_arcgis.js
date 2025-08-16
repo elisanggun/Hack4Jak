@@ -64,13 +64,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
- // --- BAGIAN 2: LOGIKA BARU (LEAFLET & PETA INTERAKTIF) ---
+    // --- BAGIAN 2: LOGIKA BARU (ARCGIS OAUTH 2.0 & PETA INTERAKTIF) ---
 
-    // Variabel global untuk peta dan lapisan
-    let map;
+    // Variabel global untuk peta
+    let map, view;
     let layers = {};
 
-    // Data untuk linimasa (tetap sama)
+    // Data untuk linimasa (diperpendek untuk contoh)
     const timelineData = {
         0: { era: "Pre-Colonial (1500s)", impacts: [{ status: "green", text: "Natural water absorption systems intact" }] },
         1: { era: "Dutch Colonial (1600s)", impacts: [{ status: "yellow", text: "First artificial drainage systems" }] },
@@ -79,40 +79,79 @@ document.addEventListener('DOMContentLoaded', () => {
         4: { era: "Modern Jakarta (2024)", impacts: [{ status: "red", text: "Severe land subsidence" }] }
     };
 
+    // Memuat modul ArcGIS yang diperlukan
+    require([
+        "esri/identity/OAuthInfo",
+        "esri/identity/IdentityManager",
+        "esri/Map",
+        "esri/views/MapView",
+        "esri/layers/FeatureLayer"
+    ], function(OAuthInfo, esriId, Map, MapView, FeatureLayer) {
+
+        // Konfigurasi informasi OAuth 2.0
+        // --- MENJADI ---
+        const info = new OAuthInfo({
+            appId: "9Fexni0JVY1MIw82",
+            popup: true,
+            popupCallbackUrl: "index.html" // Tambahkan baris ini
+        });
+        esriId.registerOAuthInfos([info]);
+
+        const authContainer = document.getElementById('auth-container');
+        const authButton = document.getElementById('auth-button');
+        const mapDiv = document.getElementById('arcgisMapDiv');
+
+        // Cek status login
+        esriId.checkSignInStatus(info.portalUrl + "/sharing").then(handleSignedIn).catch(handleSignedOut);
+
+        authButton.addEventListener("click", () => esriId.getCredential(info.portalUrl + "/sharing"));
+
+        function handleSignedIn() {
+            authContainer.classList.add('hidden');
+            mapDiv.classList.remove('hidden');
+            initializeArcGISMap(Map, MapView, FeatureLayer);
+        }
+
+        function handleSignedOut() {
+            authContainer.classList.remove('hidden');
+            mapDiv.classList.add('hidden');
+        }
+    });
+
     /**
-     * Menginisialisasi peta Leaflet dan memuat data GeoJSON.
+     * Menginisialisasi peta ArcGIS setelah login berhasil.
      */
-    function initializeLeafletMap() {
-        // Inisialisasi peta dan atur tampilan awal ke Jakarta
-        map = L.map('leafletMapDiv').setView([-6.2088, 106.8456], 11);
+    function initializeArcGISMap(Map, MapView, FeatureLayer) {
+        // Definisikan lapisan data Anda
+        layers.rivers = new FeatureLayer({
+            url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/World_Major_Rivers/FeatureServer/0",
+            visible: false
+        });
 
-        // Tambahkan basemap (peta dasar) gelap dari CartoDB
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-            subdomains: 'abcd',
-            maxZoom: 20
-        }).addTo(map);
+        layers.urban = new FeatureLayer({
+            url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/World_Urban_Areas/FeatureServer/0",
+            visible: false
+        });
 
-        // Muat data analisis banjir Anda dari file GeoJSON
-        fetch('assets/data/adm_dki-jakart_FeaturesToJSO.geojson') // Pastikan nama file ini sesuai
-            .then(response => response.json())
-            .then(data => {
-                // Buat layer GeoJSON dengan gaya kustom
-                layers.floodRisk = L.geoJSON(data, {
-                    style: function(feature) {
-                        return {
-                            color: "#ff7800", // Warna oranye
-                            weight: 2,
-                            opacity: 0.8
-                        };
-                    }
-                });
-                // Jangan tambahkan ke peta dulu, biarkan slider yang mengontrol
-            })
-            .catch(error => console.error('Error loading GeoJSON:', error));
+        // --- PERUBAHAN DI SINI ---
+        // Ganti URL placeholder dengan URL dari data analisis Anda di ArcGIS Online
+        layers.floodRisk = new FeatureLayer({
+            url: "https://arcg.is/1jbK8r2",
+            visible: false,
+            opacity: 0.6
+        });
 
-        // Tambahkan layer lain jika perlu (misalnya, sungai) dengan cara yang sama
-        // fetch('assets/data/sungai.geojson').then(...)
+        map = new Map({
+            basemap: "arcgis-dark-gray",
+            layers: Object.values(layers)
+        });
+
+        view = new MapView({
+            container: "arcgisMapDiv",
+            map: map,
+            center: [106.8456, -6.2088],
+            zoom: 11
+        });
 
         // Sinkronkan slider dengan peta saat pertama kali dimuat
         updateTimelineDisplay(document.getElementById('timeline-slider').value);
@@ -122,19 +161,15 @@ document.addEventListener('DOMContentLoaded', () => {
      * Memperbarui lapisan peta yang terlihat berdasarkan slider.
      */
     function updateMapLayers(timelineValue) {
-        if (!map) return; // Pastikan peta sudah ada
+        if (!layers.rivers) return; // Pastikan lapisan sudah ada
+        Object.values(layers).forEach(layer => layer.visible = false);
 
-        // Hapus lapisan lama jika ada
-        if (layers.floodRisk && map.hasLayer(layers.floodRisk)) {
-            map.removeLayer(layers.floodRisk);
-        }
-
-        // Tampilkan lapisan yang sesuai dengan era
-        // Contoh: tampilkan lapisan risiko banjir hanya di era modern
-        if (timelineValue >= 3) {
-            if (layers.floodRisk) {
-                layers.floodRisk.addTo(map);
-            }
+        switch (timelineValue) {
+            case 0: layers.rivers.visible = true; break;
+            case 1:
+            case 2: layers.rivers.visible = true; layers.urban.visible = true; break;
+            case 3:
+            case 4: layers.rivers.visible = true; layers.urban.visible = true; layers.floodRisk.visible = true; break;
         }
     }
 
