@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Konfigurasi informasi OAuth 2.0
         const info = new OAuthInfo({
-            appId: "9Fexni0JVY1MIw82", // PENTING: Ganti dengan Client ID Anda
+            appId: "036a9328bc8f446c91852511ea22ec7f", // PENTING: Ganti dengan Client ID Anda
             popup: true
         });
         esriId.registerOAuthInfos([info]);
