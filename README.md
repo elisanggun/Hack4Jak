@@ -11,8 +11,7 @@ Sebuah dashboard interaktif untuk memahami sejarah banjir di Jakarta melalui per
 
 ## 🚀 Demo Langsung
 
-**Lihat versi livenya di sini:** [**shapeofjakarta.github.io**](https://nama-anda.github.io/nama-repositori/)
-*(Jangan lupa ganti dengan URL GitHub Pages Anda)*
+**Lihat versi livenya di sini:** [**shapeofjakarta.github.io**](https://elisanggun.github.io/Hack4Jak/)
 
 ---
 
