@@ -121,19 +121,28 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = timelineData[value];
         if (!data) return;
 
-        document.getElementById('era-label').textContent = data.era;
+        const eraLabel = document.getElementById('era-label');
+        if (eraLabel) {
+            eraLabel.textContent = data.era;
+        }
+
         const impactContent = document.getElementById('impact-content');
-        impactContent.innerHTML = (data.impacts || []).map(impact => {
-            const colorClass = `bg-${impact.status}-500`;
-            return `<div class="flex items-center space-x-3"><div class="w-3 h-3 ${colorClass} rounded-full"></div><span>${impact.text}</span></div>`;
-        }).join('');
+        if (impactContent) {
+            impactContent.innerHTML = (data.impacts || []).map(impact => {
+                const colorClass = `bg-${impact.status}-500`;
+                return `<div class="flex items-center space-x-3"><div class="w-3 h-3 ${colorClass} rounded-full"></div><span>${impact.text}</span></div>`;
+            }).join('');
+        }
 
         updateMapLayers(parseInt(value));
     }
 
-    document.getElementById('timeline-slider').addEventListener('input', (e) => {
-        updateTimelineDisplay(e.target.value);
-    });
+    const timelineSlider = document.getElementById('timeline-slider');
+    if (timelineSlider) {
+        timelineSlider.addEventListener('input', (e) => {
+            updateTimelineDisplay(e.target.value);
+        });
+    }
 
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
