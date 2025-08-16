@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 maxZoom: 20
             }).addTo(map);
 
-            fetch('assets/data/analisis_banjir.geojson')
+            fetch('assets/data/adm_dki-jakart_FeaturesToJSO.geojson')
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Network response was not ok');
