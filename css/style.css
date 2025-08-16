@@ -22,14 +22,19 @@
             0%, 100% { transform: translateX(0) scale(1); opacity: 0.7; }
             50% { transform: translateX(10px) scale(1.05); opacity: 1; }
         }
-        /* Memastikan peta mengisi kontainer yang telah ditentukan */
-#arcgisMapDiv {
+/* css/style.css */
+
+/* ... (gaya Anda yang lain) ... */
+
+/* Ganti ID di sini agar sesuai dengan HTML */
+#leafletMapDiv {
     padding: 0;
     margin: 0;
     height: 100%;
     width: 100%;
 }
 
+/* ... (gaya Anda yang lain) ... */
 
 
         .wisdom-card {
