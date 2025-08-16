@@ -89,9 +89,11 @@ document.addEventListener('DOMContentLoaded', () => {
     ], function(OAuthInfo, esriId, Map, MapView, FeatureLayer) {
 
         // Konfigurasi informasi OAuth 2.0
+        // --- MENJADI ---
         const info = new OAuthInfo({
-            appId: "9Fexni0JVY1MIw82", // PENTING: Ganti dengan Client ID Anda
-            popup: true
+            appId: "9Fexni0JVY1MIw82",
+            popup: true,
+            popupCallbackUrl: "index.html" // Tambahkan baris ini
         });
         esriId.registerOAuthInfos([info]);
 
