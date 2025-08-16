@@ -123,9 +123,23 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     function initializeArcGISMap(Map, MapView, FeatureLayer) {
         // Definisikan lapisan data Anda
-        layers.rivers = new FeatureLayer({ url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/World_Hydro_Reference_Overlay/FeatureServer/0", visible: false });
-        layers.urban = new FeatureLayer({ url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/World_Urban_Areas/FeatureServer/0", visible: false });
-        layers.floodRisk = new FeatureLayer({ url: "https://services.arcgis.com/V6ZHFr6zdgNZuVG0/arcgis/rest/services/World_Flood_Hazard/FeatureServer/0", visible: false, opacity: 0.6 });
+        layers.rivers = new FeatureLayer({
+            url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/World_Major_Rivers/FeatureServer/0",
+            visible: false
+        });
+
+        layers.urban = new FeatureLayer({
+            url: "https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/World_Urban_Areas/FeatureServer/0",
+            visible: false
+        });
+
+        // --- PERUBAHAN DI SINI ---
+        // Ganti URL placeholder dengan URL dari data analisis Anda di ArcGIS Online
+        layers.floodRisk = new FeatureLayer({
+            url: "https://arcg.is/1jbK8r2",
+            visible: false,
+            opacity: 0.6
+        });
 
         map = new Map({
             basemap: "arcgis-dark-gray",
